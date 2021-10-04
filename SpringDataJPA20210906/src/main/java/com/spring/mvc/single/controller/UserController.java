@@ -1,8 +1,10 @@
 package com.spring.mvc.single.controller;
 
+import java.util.List;
 import java.util.Random;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -36,4 +38,20 @@ public class UserController {
 		}
 		return "CreateSampleData" ;
 	}
+	//查詢範例資料 1
+	@GetMapping("/test/findall")
+	@ResponseBody
+	public List<User> testFindall() {
+		List<User> users = userRepository.findAll();
+		return users ;
+	}
+	
+	//查詢範例資料 2
+		@GetMapping("/test/findall_sort")
+		@ResponseBody
+		public List<User> testFindallSort() {
+			Sort sort = new Sort(Sort.Direction.ASC,"name"); //ASC 自然排序(小到大) 反之DESC
+			List<User> users = userRepository.findAll(sort);
+			return users ;
+		}
 }
