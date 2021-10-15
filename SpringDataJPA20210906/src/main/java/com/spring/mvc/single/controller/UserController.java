@@ -15,8 +15,12 @@ import org.springframework.data.domain.Sort;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.format.annotation.DateTimeFormat.ISO;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -32,6 +36,64 @@ public class UserController {
 	@Autowired
 	private UserRepository userRepository;
 
+	// user資料維護首頁
+
+	@GetMapping(value = { "/", "/index" })
+	private String index(Model model) {
+		List<User> users = userRepository.findAll();
+		model.addAttribute("user", new User());
+		model.addAttribute("users", users);
+		model.addAttribute("_method", "POST");
+		return "user/index"; // 重導到 /WEB-INF/view/user/index.jsp
+	}
+
+	// User 新增               //原狀況:有相同資料視為修改
+	@PostMapping(value = "/")
+	public String create(User user) { // 得到User user
+		userRepository.save(user);
+		return "redirect:./"; // .當下路徑
+	}
+
+	// User 修改
+	@PutMapping(value = "/") //Http Put 更新
+	public String update(User user) {
+		userRepository.saveAndFlush(user);
+		return "redirect:./";
+	}
+
+	// User 刪除
+	@DeleteMapping(value = "/")
+	public String delete(User user) {
+		userRepository.delete(user.getId());
+		
+		return"redirect:./";
+	}
+	
+	//查詢 ID
+	@GetMapping(value = "/{id}")
+    public String getUserById(Model model , @PathVariable Long id) {
+    	User user = userRepository.findOne(id);
+    	//再重返給首頁
+    	List<User> users = userRepository.findAll();
+		model.addAttribute("user", user);
+		model.addAttribute("users", users);
+		model.addAttribute("_method", "PUT");
+		return "user/index"; // 重導到 /WEB-INF/view/user/index.jsp 
+    }	
+	//刪除
+	@GetMapping(value = "/delete/{id}")
+    public String DeletegetUserById(Model model , @PathVariable Long id) {
+		User user = userRepository.findOne(id);
+    	//再重返給首頁
+    	List<User> users = userRepository.findAll();
+		model.addAttribute("user", user);
+		model.addAttribute("users", users);
+		model.addAttribute("_method", "DELETE");
+		return "user/index"; // 重導到 /WEB-INF/view/user/index.jsp 
+    }
+	
+	// --------------------------------------
+	// 以下測試user程式
 	@GetMapping("/test/create_sample_data")
 	@ResponseBody
 	public String testCreateSampleData() {
@@ -165,10 +227,10 @@ public class UserController {
 
 	// 測試 url : /mvc/user/test/birth_between?begin=1965-9-9&end=1970-12-31
 	@GetMapping("/test/birth_between")
-	@ResponseBody 
+	@ResponseBody
 
-	public List<User> getByBirthBetween(@RequestParam("begin") @DateTimeFormat(iso = ISO.DATE) Date begin
-			                           ,@RequestParam("end") @DateTimeFormat(iso = ISO.DATE) Date end) {
+	public List<User> getByBirthBetween(@RequestParam("begin") @DateTimeFormat(iso = ISO.DATE) Date begin,
+			@RequestParam("end") @DateTimeFormat(iso = ISO.DATE) Date end) {
 
 		return userRepository.getByBirthBetween(begin, end);
 	}
